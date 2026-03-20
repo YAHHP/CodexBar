@@ -10,33 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Swift 6.2
-        run: |
-          # Download and install Swift 6.2 toolchain
-          SWIFT_VERSION="swift-6.2-RELEASE"
-          SWIFT_PLATFORM="apple"
-          SWIFT_ARCH="arm64"
-          
-          curl -sL "https://download.swift.org/swift-6.2-release/${SWIFT_PLATFORM}${SWIFT_ARCH}/${SWIFT_VERSION}/${SWIFT_VERSION}-${SWIFT_PLATFORM}${SWIFT_ARCH}.tar.gz" -o swift.tar.gz
-          tar -xzf swift.tar.gz
-          export PATH="$(pwd)/${SWIFT_VERSION}-${SWIFT_PLATFORM}${SWIFT_ARCH}/usr/bin:$PATH"
-          
-          # Verify version
-          swift --version
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2"
+
+      - name: Verify Swift version
+        run: swift --version
 
       - name: Resolve dependencies
-        run: |
-          export PATH="$(pwd)/swift-6.2-RELEASE-apple-arm64/usr/bin:$PATH"
-          swift package resolve
+        run: swift package resolve
 
       - name: Build release
-        run: |
-          export PATH="$(pwd)/swift-6.2-RELEASE-apple-arm64/usr/bin:$PATH"
-          swift build -c release
+        run: swift build -c release
 
       - name: Package app
         run: |
-          export PATH="$(pwd)/swift-6.2-RELEASE-apple-arm64/usr/bin:$PATH"
           if [ -f ./Scripts/package_app.sh ]; then
             CODEXBAR_SIGNING=adhoc ./Scripts/package_app.sh
           else
