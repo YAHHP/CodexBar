@@ -1,0 +1,37 @@
+name: Build CodexBar
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Swift version
+        run: swift --version
+
+      - name: Resolve dependencies
+        run: swift package resolve
+
+      - name: Build release
+        run: swift build -c release
+
+      - name: Package app
+        run: |
+          if [ -f ./Scripts/package_app.sh ]; then
+            CODEXBAR_SIGNING=adhoc ./Scripts/package_app.sh
+          else
+            echo "No package script found, uploading raw build"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodexBar-custom
+          path: |
+            CodexBar.app
+            .build/release/
+          retention-days: 30
